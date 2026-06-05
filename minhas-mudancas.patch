@@ -1,0 +1,786 @@
+diff --git a/.claude/settings.json b/.claude/settings.json
+deleted file mode 100644
+index 176e6a5..0000000
+--- a/.claude/settings.json
++++ /dev/null
+@@ -1,5 +0,0 @@
+-{
+-  "enabledPlugins": {
+-    "expo@claude-plugins-official": true
+-  }
+-}
+diff --git a/.gitignore b/.gitignore
+index d914c32..383a26c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -39,3 +39,7 @@ yarn-error.*
+ # generated native folders
+ /ios
+ /android
++
++# environment
++.env
++.DS_Store
+diff --git a/AGENTS.md b/AGENTS.md
+deleted file mode 100644
+index a26b4bb..0000000
+--- a/AGENTS.md
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# Expo HAS CHANGED
+-
+-Read the exact versioned docs at https://docs.expo.dev/versions/v56.0.0/ before writing any code.
+diff --git a/CLAUDE.md b/CLAUDE.md
+deleted file mode 100644
+index 43c994c..0000000
+--- a/CLAUDE.md
++++ /dev/null
+@@ -1 +0,0 @@
+-@AGENTS.md
+diff --git a/app/(tabs)/_layout.tsx b/app/(tabs)/_layout.tsx
+index 014c04f..7946de6 100644
+--- a/app/(tabs)/_layout.tsx
++++ b/app/(tabs)/_layout.tsx
+@@ -36,6 +36,12 @@ export default function TabsLayout() {
+           tabBarIcon: ({ color, size }) => <Ionicons name="radio-outline" size={size} color={color} />,
+         }}
+       />
++      <Tabs.Screen
++        name="two"
++        options={{
++          href: null, // Esconde essa aba do navegador
++        }}
++      />
+     </Tabs>
+   );
+ }
+\ No newline at end of file
+diff --git a/app/(tabs)/comms.tsx b/app/(tabs)/comms.tsx
+index 629cd4c..411329d 100644
+--- a/app/(tabs)/comms.tsx
++++ b/app/(tabs)/comms.tsx
+@@ -8,24 +8,35 @@ export default function CommsDashboard() {
+   const context = useContext(MissionContext);
+ 
+   if (!context) return null;
+-  const { telemetry } = context;
++  const { telemetry, telemetryHistory } = context;
+ 
+   return (
+     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+       <View style={styles.card}>
+         <Text style={styles.cardLabel}>Força do Sinal (Terra)</Text>
+-        <Text style={styles.cardValue}>{telemetry.signalStrength}%</Text>
++        <Text style={styles.cardValue}>{telemetry.signalStrength.toFixed(1)}%</Text>
+       </View>
+-      
++
+       <View style={styles.card}>
+         <Text style={styles.cardLabel}>Status da Telemetria</Text>
+         <Text style={styles.cardValue}>Estável</Text>
+       </View>
+ 
+-      <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings')}>
++      <View style={styles.chartContainer}>
++        <Text style={styles.chartLabel}>Histórico de Sinal</Text>
++        <View style={styles.historicList}>
++          {telemetryHistory.slice(-5).reverse().map((item, idx) => (
++            <Text key={idx} style={styles.historicItem}>
++              {idx + 1}. {item.signalStrength.toFixed(1)}%
++            </Text>
++          ))}
++        </View>
++      </View>
++
++      <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings?tipo=comunicacoes')}>
+         <Text style={styles.actionText}>Configurar Antenas</Text>
+       </TouchableOpacity>
+-      
++
+       <TouchableOpacity style={[styles.actionButton, styles.alertButton]} onPress={() => router.push('/alerts')}>
+         <Text style={styles.actionText}>Ver Alertas de Conexão</Text>
+       </TouchableOpacity>
+@@ -36,9 +47,13 @@ export default function CommsDashboard() {
+ const styles = StyleSheet.create({
+   container: { flex: 1, backgroundColor: '#121824' },
+   content: { padding: 16 },
+-  card: { backgroundColor: '#0A0E1A', padding: 20, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#B8E986' }, // Borda verde para comunicação
++  card: { backgroundColor: '#0A0E1A', padding: 20, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#B8E986' },
+   cardLabel: { color: '#707E94', fontSize: 12, textTransform: 'uppercase' },
+   cardValue: { color: '#FFFFFF', fontSize: 32, fontWeight: 'bold', marginTop: 6 },
++  chartContainer: { backgroundColor: '#0A0E1A', padding: 12, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#00E5FF' },
++  chartLabel: { color: '#B8E986', fontSize: 12, textTransform: 'uppercase', fontWeight: 'bold', marginBottom: 8 },
++  historicList: { paddingVertical: 8 },
++  historicItem: { color: '#D0D6E0', fontSize: 14, lineHeight: 20, paddingVertical: 4 },
+   actionButton: { backgroundColor: '#00E5FF', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 12 },
+   alertButton: { backgroundColor: '#FF3B30' },
+   actionText: { color: '#0A0E1A', fontWeight: 'bold', fontSize: 16 },
+diff --git a/app/(tabs)/energy.tsx b/app/(tabs)/energy.tsx
+index 4f51176..b57e809 100644
+--- a/app/(tabs)/energy.tsx
++++ b/app/(tabs)/energy.tsx
+@@ -8,24 +8,35 @@ export default function EnergyDashboard() {
+   const context = useContext(MissionContext);
+ 
+   if (!context) return null;
+-  const { telemetry } = context;
++  const { telemetry, telemetryHistory } = context;
+ 
+   return (
+     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+       <View style={styles.card}>
+         <Text style={styles.cardLabel}>Carga das Baterias</Text>
+-        <Text style={styles.cardValue}>{telemetry.energyLevel}%</Text>
++        <Text style={styles.cardValue}>{telemetry.energyLevel.toFixed(1)}%</Text>
+       </View>
+-      
++
+       <View style={styles.card}>
+         <Text style={styles.cardLabel}>Eficiência dos Painéis Solares</Text>
+         <Text style={styles.cardValue}>Ideal</Text>
+       </View>
+ 
+-      <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings')}>
++      <View style={styles.chartContainer}>
++        <Text style={styles.chartLabel}>Histórico de Energia</Text>
++        <View style={styles.historicList}>
++          {telemetryHistory.slice(-5).reverse().map((item, idx) => (
++            <Text key={idx} style={styles.historicItem}>
++              {idx + 1}. {item.energyLevel.toFixed(1)}%
++            </Text>
++          ))}
++        </View>
++      </View>
++
++      <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings?tipo=energia')}>
+         <Text style={styles.actionText}>Ajustar Consumo</Text>
+       </TouchableOpacity>
+-      
++
+       <TouchableOpacity style={[styles.actionButton, styles.alertButton]} onPress={() => router.push('/alerts')}>
+         <Text style={styles.actionText}>Ver Alertas de Energia</Text>
+       </TouchableOpacity>
+@@ -36,9 +47,13 @@ export default function EnergyDashboard() {
+ const styles = StyleSheet.create({
+   container: { flex: 1, backgroundColor: '#121824' },
+   content: { padding: 16 },
+-  card: { backgroundColor: '#0A0E1A', padding: 20, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#F5A623' }, // Borda amarela/laranja para energia
++  card: { backgroundColor: '#0A0E1A', padding: 20, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#F5A623' },
+   cardLabel: { color: '#707E94', fontSize: 12, textTransform: 'uppercase' },
+   cardValue: { color: '#FFFFFF', fontSize: 32, fontWeight: 'bold', marginTop: 6 },
++  chartContainer: { backgroundColor: '#0A0E1A', padding: 12, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#00E5FF' },
++  chartLabel: { color: '#F5A623', fontSize: 12, textTransform: 'uppercase', fontWeight: 'bold', marginBottom: 8 },
++  historicList: { paddingVertical: 8 },
++  historicItem: { color: '#D0D6E0', fontSize: 14, lineHeight: 20, paddingVertical: 4 },
+   actionButton: { backgroundColor: '#00E5FF', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 12 },
+   alertButton: { backgroundColor: '#FF3B30' },
+   actionText: { color: '#0A0E1A', fontWeight: 'bold', fontSize: 16 },
+diff --git a/app/(tabs)/index.tsx b/app/(tabs)/index.tsx
+index ce4bdf0..8354f11 100644
+--- a/app/(tabs)/index.tsx
++++ b/app/(tabs)/index.tsx
+@@ -8,20 +8,34 @@ export default function SensorsDashboard() {
+   const context = useContext(MissionContext);
+ 
+   if (!context) return null;
+-  const { telemetry } = context;
++  const { telemetry, telemetryHistory } = context;
+ 
+   return (
+     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
++      {/* Cards principais com indicadores críticos da missão */}
+       <View style={styles.card}>
+         <Text style={styles.cardLabel}>Estabilidade Orbital</Text>
+-        <Text style={styles.cardValue}>{telemetry.orbitalStability}%</Text>
++        <Text style={styles.cardValue}>{telemetry.orbitalStability.toFixed(1)}%</Text>
+       </View>
+       <View style={styles.card}>
+         <Text style={styles.cardLabel}>Temperatura do Núcleo</Text>
+-        <Text style={styles.cardValue}>{telemetry.temperature} °C</Text>
++        <Text style={styles.cardValue}>{telemetry.temperature.toFixed(1)} °C</Text>
+       </View>
+ 
+-      <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings')}>
++      {/* Mostra últimas 5 leituras de temperatura */}
++      <View style={styles.chartContainer}>
++        <Text style={styles.chartLabel}>Histórico de Temperatura</Text>
++        <View style={styles.historicList}>
++          {telemetryHistory.slice(-5).reverse().map((item, idx) => (
++            <Text key={idx} style={styles.historicItem}>
++              {idx + 1}. {item.temperature.toFixed(1)}°C
++            </Text>
++          ))}
++        </View>
++      </View>
++
++      <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/settings?tipo=sensores')}>
++
+         <Text style={styles.actionText}>Configurar Limites</Text>
+       </TouchableOpacity>
+       <TouchableOpacity style={[styles.actionButton, styles.alertButton]} onPress={() => router.push('/alerts')}>
+@@ -37,6 +51,10 @@ const styles = StyleSheet.create({
+   card: { backgroundColor: '#0A0E1A', padding: 20, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#00E5FF' },
+   cardLabel: { color: '#707E94', fontSize: 12, textTransform: 'uppercase' },
+   cardValue: { color: '#FFFFFF', fontSize: 32, fontWeight: 'bold', marginTop: 6 },
++  chartContainer: { backgroundColor: '#0A0E1A', padding: 12, borderRadius: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: '#F5A623' },
++  chartLabel: { color: '#00E5FF', fontSize: 12, textTransform: 'uppercase', fontWeight: 'bold', marginBottom: 8 },
++  historicList: { paddingVertical: 8 },
++  historicItem: { color: '#D0D6E0', fontSize: 14, lineHeight: 20, paddingVertical: 4 },
+   actionButton: { backgroundColor: '#00E5FF', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 12 },
+   alertButton: { backgroundColor: '#FF3B30' },
+   actionText: { color: '#0A0E1A', fontWeight: 'bold', fontSize: 16 },
+diff --git a/app/alerts.tsx b/app/alerts.tsx
+index 92cf0ac..ab7bbb2 100644
+--- a/app/alerts.tsx
++++ b/app/alerts.tsx
+@@ -1,5 +1,5 @@
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+-import { useContext, useEffect, useState } from 'react';
++import { useCallback, useContext, useEffect, useState } from 'react';
+ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+ import { MissionContext } from '../context/MissionContext';
+ 
+@@ -17,22 +17,21 @@ export default function AlertsScreen() {
+   if (!context) return null;
+   const { telemetry } = context;
+ 
+-  useEffect(() => {
+-    checkAlerts();
+-  }, [telemetry]); // Recalcula sempre que a telemetria mudar
+-
+-  const checkAlerts = async () => {
++  const checkAlerts = useCallback(async () => {
+     try {
+       const savedTemp = await AsyncStorage.getItem('@max_temp');
+       const savedEnergy = await AsyncStorage.getItem('@min_energy');
+-      
++      const savedSignal = await AsyncStorage.getItem('@min_signal');
++      const savedStability = await AsyncStorage.getItem('@max_stability');
++
+       // Define limiares padrão caso o usuário ainda não tenha configurado
+       const maxTempLimit = savedTemp ? Number(savedTemp) : 30;
+       const minEnergyLimit = savedEnergy ? Number(savedEnergy) : 20;
++      const minSignalLimit = savedSignal ? Number(savedSignal) : 40;
++      const minStabilityLimit = savedStability ? Number(savedStability) : 85;
+ 
+       const newAlerts: AlertItem[] = [];
+ 
+-      // Lógica de Geração de Alertas
+       if (telemetry.temperature >= maxTempLimit) {
+         newAlerts.push({
+           id: 'temp_high',
+@@ -41,6 +40,14 @@ export default function AlertsScreen() {
+         });
+       }
+ 
++      if (telemetry.orbitalStability < minStabilityLimit) {
++        newAlerts.push({
++          id: 'stability_low',
++          type: 'warning',
++          message: `ATENÇÃO: Estabilidade orbital (${telemetry.orbitalStability.toFixed(1)}%) abaixo do mínimo aceitável de ${minStabilityLimit}%.`,
++        });
++      }
++
+       if (telemetry.energyLevel <= minEnergyLimit) {
+         newAlerts.push({
+           id: 'energy_low',
+@@ -49,7 +56,8 @@ export default function AlertsScreen() {
+         });
+       }
+ 
+-      if (telemetry.signalStrength < 40) {
++      if (telemetry.signalStrength < minSignalLimit) {
++
+         newAlerts.push({
+           id: 'signal_loss',
+           type: 'danger',
+@@ -63,7 +71,12 @@ export default function AlertsScreen() {
+     } finally {
+       setIsLoading(false);
+     }
+-  };
++  }, [telemetry]);
++
++  useEffect(() => {
++    checkAlerts();
++  }, [checkAlerts]);
++
+ 
+   if (isLoading) {
+     return (
+diff --git a/app/settings.tsx b/app/settings.tsx
+index c915ec3..aecee2d 100644
+--- a/app/settings.tsx
++++ b/app/settings.tsx
+@@ -1,16 +1,19 @@
+ import AsyncStorage from '@react-native-async-storage/async-storage';
++import { useLocalSearchParams } from 'expo-router';
+ import { useEffect, useState } from 'react';
+ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+ 
+ export default function SettingsScreen() {
+-  // Estados para os inputs (limiares críticos)
++  const { tipo } = useLocalSearchParams<{ tipo?: string }>();
++
+   const [maxTemp, setMaxTemp] = useState('');
+   const [minEnergy, setMinEnergy] = useState('');
+-  
+-  // Estado para feedback de erro na validação
+-  const [errors, setErrors] = useState({ temp: '', energy: '' });
++  const [minSignal, setMinSignal] = useState('');
++  const [maxStability, setMaxStability] = useState('');
++
++  const [errors, setErrors] = useState({ temp: '', energy: '', signal: '', stability: '' });
++  const [saved, setSaved] = useState(false);
+ 
+-  // Carrega os dados salvos assim que a tela abre
+   useEffect(() => {
+     loadSettings();
+   }, []);
+@@ -19,9 +22,13 @@ export default function SettingsScreen() {
+     try {
+       const savedTemp = await AsyncStorage.getItem('@max_temp');
+       const savedEnergy = await AsyncStorage.getItem('@min_energy');
+-      
++      const savedSignal = await AsyncStorage.getItem('@min_signal');
++      const savedStability = await AsyncStorage.getItem('@max_stability');
++
+       if (savedTemp) setMaxTemp(savedTemp);
+       if (savedEnergy) setMinEnergy(savedEnergy);
++      if (savedSignal) setMinSignal(savedSignal);
++      if (savedStability) setMaxStability(savedStability);
+     } catch (e) {
+       console.log('Erro ao carregar configurações', e);
+     }
+@@ -29,70 +36,173 @@ export default function SettingsScreen() {
+ 
+   const handleSave = async () => {
+     let hasError = false;
+-    let newErrors = { temp: '', energy: '' };
++    let newErrors = { temp: '', energy: '', signal: '', stability: '' };
+ 
+-    // Validação dos Inputs
+-    if (!maxTemp || isNaN(Number(maxTemp))) {
+-      newErrors.temp = 'Digite um valor numérico válido.';
+-      hasError = true;
+-    }
+-    if (!minEnergy || isNaN(Number(minEnergy))) {
+-      newErrors.energy = 'Digite um valor numérico válido.';
+-      hasError = true;
++    // Validação específica por tipo de dashboard
++    if (tipo === 'sensores') {
++      if (!maxTemp || isNaN(Number(maxTemp))) {
++        newErrors.temp = 'Digite um valor numérico válido.';
++        hasError = true;
++      }
++      if (!maxStability || isNaN(Number(maxStability))) {
++        newErrors.stability = 'Digite um valor numérico válido.';
++        hasError = true;
++      }
++    } else if (tipo === 'energia') {
++      if (!minEnergy || isNaN(Number(minEnergy))) {
++        newErrors.energy = 'Digite um valor numérico válido.';
++        hasError = true;
++      }
++    } else if (tipo === 'comunicacoes') {
++      if (!minSignal || isNaN(Number(minSignal))) {
++        newErrors.signal = 'Digite um valor numérico válido.';
++        hasError = true;
++      }
+     }
+ 
+     setErrors(newErrors);
++    if (hasError) return;
+ 
+-    if (hasError) return; // Barra o salvamento se houver erro
+-
+-    // Persistência com AsyncStorage
+     try {
+-      await AsyncStorage.setItem('@max_temp', maxTemp);
+-      await AsyncStorage.setItem('@min_energy', minEnergy);
+-      Alert.alert('Sucesso', 'Parâmetros de missão atualizados e salvos no sistema.');
++      // Salva baseado no tipo de dashboard
++      if (tipo === 'sensores') {
++        await AsyncStorage.setItem('@max_temp', maxTemp);
++        await AsyncStorage.setItem('@max_stability', maxStability);
++        Alert.alert('✅ Sensores Configurados', 'Parâmetros de temperatura e estabilidade orbital salvos!');
++      } else if (tipo === 'energia') {
++        await AsyncStorage.setItem('@min_energy', minEnergy);
++        Alert.alert('✅ Energia Configurada', 'Limiar de energia mínima salvo!');
++      } else if (tipo === 'comunicacoes') {
++        await AsyncStorage.setItem('@min_signal', minSignal);
++        Alert.alert('✅ Comunicações Configuradas', 'Limiar de sinal mínimo salvo!');
++      }
++
++      setSaved(true);
++      setTimeout(() => setSaved(false), 2000);
+     } catch (e) {
+-      Alert.alert('Erro', 'Falha ao salvar as configurações.');
++      Alert.alert('❌ Erro', 'Falha ao salvar as configurações.');
+     }
+   };
+ 
++  // Define cores e conteúdo baseado no tipo
++  const getConfig = () => {
++    switch (tipo) {
++      case 'sensores':
++        return {
++          title: '🔧 Sensores',
++          subtitle: 'Configure temperatura e estabilidade orbital',
++          accentColor: '#00E5FF',
++          backgroundColor: 'rgba(0, 229, 255, 0.1)',
++        };
++      case 'energia':
++        return {
++          title: '⚡ Energia',
++          subtitle: 'Configure nível mínimo de energia',
++          accentColor: '#F5A623',
++          backgroundColor: 'rgba(245, 166, 35, 0.1)',
++        };
++      case 'comunicacoes':
++        return {
++          title: '📡 Comunicações',
++          subtitle: 'Configure força mínima de sinal',
++          accentColor: '#B8E986',
++          backgroundColor: 'rgba(184, 233, 134, 0.1)',
++        };
++      default:
++        return {
++          title: '⚙️  Configurações',
++          subtitle: 'Defina parâmetros da missão',
++          accentColor: '#00E5FF',
++          backgroundColor: 'rgba(0, 229, 255, 0.1)',
++        };
++    }
++  };
++
++  const config = getConfig();
++
+   return (
+-    <KeyboardAvoidingView 
+-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+-      style={styles.container}
+-    >
++    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
+       <ScrollView contentContainerStyle={styles.content}>
+-        <Text style={styles.headerTitle}>Limiares de Alerta</Text>
+-        <Text style={styles.headerSubtitle}>Defina quando o sistema deve gerar avisos críticos.</Text>
+-
+-        <View style={styles.inputGroup}>
+-          <Text style={styles.label}>Temperatura Máxima do Núcleo (°C)</Text>
+-          <TextInput
+-            style={[styles.input, errors.temp ? styles.inputError : null]}
+-            value={maxTemp}
+-            onChangeText={setMaxTemp}
+-            keyboardType="numeric"
+-            placeholder="Ex: 30"
+-            placeholderTextColor="#707E94"
+-          />
+-          {errors.temp ? <Text style={styles.errorText}>{errors.temp}</Text> : null}
++        {/* Cabeçalho temático */}
++        <View style={[styles.header, { borderBottomColor: config.accentColor, backgroundColor: config.backgroundColor }]}>
++          <Text style={styles.headerTitle}>{config.title}</Text>
++          <Text style={styles.headerSubtitle}>{config.subtitle}</Text>
+         </View>
+ 
+-        <View style={styles.inputGroup}>
+-          <Text style={styles.label}>Nível Mínimo de Energia (%)</Text>
+-          <TextInput
+-            style={[styles.input, errors.energy ? styles.inputError : null]}
+-            value={minEnergy}
+-            onChangeText={setMinEnergy}
+-            keyboardType="numeric"
+-            placeholder="Ex: 15"
+-            placeholderTextColor="#707E94"
+-          />
+-          {errors.energy ? <Text style={styles.errorText}>{errors.energy}</Text> : null}
+-        </View>
++        {/* Renderiza campos específicos por tipo */}
++        {(tipo === 'sensores' || !tipo) && (
++          <>
++            <View style={styles.inputGroup}>
++              <Text style={[styles.label, { color: config.accentColor }]}>Temperatura Máxima do Núcleo (°C)</Text>
++              <TextInput
++                style={[styles.input, errors.temp ? styles.inputError : null]}
++                value={maxTemp}
++                onChangeText={setMaxTemp}
++                keyboardType="numeric"
++                placeholder="Ex: 30"
++                placeholderTextColor="#707E94"
++              />
++              {errors.temp ? <Text style={styles.errorText}>{errors.temp}</Text> : null}
++            </View>
+ 
+-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+-          <Text style={styles.saveButtonText}>Gravar Configurações</Text>
++            <View style={styles.inputGroup}>
++              <Text style={[styles.label, { color: config.accentColor }]}>Estabilidade Orbital Mínima (%)</Text>
++              <TextInput
++                style={[styles.input, errors.stability ? styles.inputError : null]}
++                value={maxStability}
++                onChangeText={setMaxStability}
++                keyboardType="numeric"
++                placeholder="Ex: 85"
++                placeholderTextColor="#707E94"
++              />
++              {errors.stability ? <Text style={styles.errorText}>{errors.stability}</Text> : null}
++            </View>
++          </>
++        )}
++
++        {(tipo === 'energia' || !tipo) && (
++          <View style={styles.inputGroup}>
++            <Text style={[styles.label, { color: config.accentColor }]}>Nível Mínimo de Energia (%)</Text>
++            <TextInput
++              style={[styles.input, errors.energy ? styles.inputError : null]}
++              value={minEnergy}
++              onChangeText={setMinEnergy}
++              keyboardType="numeric"
++              placeholder="Ex: 20"
++              placeholderTextColor="#707E94"
++            />
++            {errors.energy ? <Text style={styles.errorText}>{errors.energy}</Text> : null}
++          </View>
++        )}
++
++        {tipo === 'comunicacoes' && (
++          <View style={styles.inputGroup}>
++            <Text style={[styles.label, { color: config.accentColor }]}>Força Mínima de Sinal (%)</Text>
++            <TextInput
++              style={[styles.input, errors.signal ? styles.inputError : null]}
++              value={minSignal}
++              onChangeText={setMinSignal}
++              keyboardType="numeric"
++              placeholder="Ex: 40"
++              placeholderTextColor="#707E94"
++            />
++            {errors.signal ? <Text style={styles.errorText}>{errors.signal}</Text> : null}
++          </View>
++        )}
++
++        {/* Botão com feedback visual */}
++        <TouchableOpacity
++          style={[styles.saveButton, { backgroundColor: config.accentColor }]}
++          onPress={handleSave}
++        >
++          <Text style={styles.saveButtonText}>{saved ? '✅ Salvo!' : 'Gravar Configurações'}</Text>
+         </TouchableOpacity>
++
++        {saved && (
++          <View style={[styles.successMessage, { borderLeftColor: config.accentColor }]}>
++            <Text style={styles.successText}>Configurações aplicadas com sucesso!</Text>
++          </View>
++        )}
+       </ScrollView>
+     </KeyboardAvoidingView>
+   );
+@@ -101,13 +211,41 @@ export default function SettingsScreen() {
+ const styles = StyleSheet.create({
+   container: { flex: 1, backgroundColor: '#121824' },
+   content: { padding: 20 },
++
++  header: {
++    padding: 20,
++    borderRadius: 12,
++    marginBottom: 24,
++    borderBottomWidth: 3,
++  },
++
+   headerTitle: { color: '#FFFFFF', fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
+-  headerSubtitle: { color: '#707E94', fontSize: 14, marginBottom: 24 },
++  headerSubtitle: { color: '#707E94', fontSize: 14 },
++
+   inputGroup: { marginBottom: 20 },
+-  label: { color: '#00E5FF', fontSize: 12, textTransform: 'uppercase', marginBottom: 8, fontWeight: 'bold' },
+-  input: { backgroundColor: '#0A0E1A', color: '#FFFFFF', padding: 16, borderRadius: 8, borderWidth: 1, borderColor: '#1A2333', fontSize: 16 },
++  label: { fontSize: 12, textTransform: 'uppercase', marginBottom: 8, fontWeight: 'bold' },
++
++  input: {
++    backgroundColor: '#0A0E1A',
++    color: '#FFFFFF',
++    padding: 16,
++    borderRadius: 8,
++    borderWidth: 1,
++    borderColor: '#1A2333',
++    fontSize: 16
++  },
+   inputError: { borderColor: '#FF3B30' },
+   errorText: { color: '#FF3B30', fontSize: 12, marginTop: 4 },
+-  saveButton: { backgroundColor: '#00E5FF', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 12 },
++
++  saveButton: { padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 12 },
+   saveButtonText: { color: '#0A0E1A', fontWeight: 'bold', fontSize: 16 },
+-});
+\ No newline at end of file
++
++  successMessage: {
++    backgroundColor: 'rgba(52, 211, 153, 0.1)',
++    borderLeftWidth: 4,
++    padding: 12,
++    borderRadius: 8,
++    marginTop: 16,
++  },
++  successText: { color: '#34D399', fontSize: 14, fontWeight: '600' },
++});
+diff --git a/context/MissionContext.tsx b/context/MissionContext.tsx
+index 8795e47..5b2623b 100644
+--- a/context/MissionContext.tsx
++++ b/context/MissionContext.tsx
+@@ -1,57 +1,82 @@
+-import React, { createContext, useEffect, useState } from 'react';
++import React, { createContext, useEffect, useState, ReactNode } from 'react';
+ 
+-export interface TelemetryData {
++export interface Telemetry {
+   temperature: number;
+   energyLevel: number;
+   signalStrength: number;
+   orbitalStability: number;
+ }
+ 
+-interface MissionContextType {
+-  telemetry: TelemetryData;
++export interface TelemetryHistoryItem {
++  temperature: number;
++  energyLevel: number;
++  signalStrength: number;
++  timestamp: number;
++}
++
++export interface MissionContextType {
++  telemetry: Telemetry;
++  telemetryHistory: TelemetryHistoryItem[];
+   isDarkMode: boolean;
+ }
+ 
+ export const MissionContext = createContext<MissionContextType | undefined>(undefined);
+ 
+-export function MissionProvider({ children }: { children: React.ReactNode }) {
+-  const [telemetry, setTelemetry] = useState<TelemetryData>({
++interface MissionProviderProps {
++  children: ReactNode;
++}
++
++export const MissionProvider: React.FC<MissionProviderProps> = ({ children }) => {
++  const [telemetry, setTelemetry] = useState<Telemetry>({
+     temperature: 24.5,
+     energyLevel: 88.2,
+     signalStrength: 94.0,
+     orbitalStability: 99.1,
+   });
+ 
++  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryHistoryItem[]>([
++    { temperature: 20, energyLevel: 88, signalStrength: 90, timestamp: Date.now() - 10000 },
++    { temperature: 21, energyLevel: 87, signalStrength: 91, timestamp: Date.now() - 8000 },
++    { temperature: 24.5, energyLevel: 88.2, signalStrength: 94.0, timestamp: Date.now() },
++  ]);
++
+   const [isDarkMode] = useState<boolean>(true);
+ 
+-  // Motor de simulação em tempo real
+   useEffect(() => {
+     const interval = setInterval(() => {
+-      setTelemetry((prev) => {
+-        // Gera pequenas oscilações aleatórias para simular os sensores
++      setTelemetry(prev => {
+         const tempFluctuation = (Math.random() * 2 - 1).toFixed(1);
+         const energyDrop = (Math.random() * 0.5).toFixed(1);
+         const signalFluctuation = (Math.random() * 4 - 2).toFixed(1);
+         const stabilityFluctuation = (Math.random() * 0.2 - 0.1).toFixed(2);
+ 
+-        return {
++        const newTelemetry = {
+           temperature: Number((prev.temperature + Number(tempFluctuation)).toFixed(1)),
+-          // A energia cai aos poucos, mas não passa de 0
+           energyLevel: Math.max(0, Number((prev.energyLevel - Number(energyDrop)).toFixed(1))),
+-          // O sinal oscila entre 0 e 100
+           signalStrength: Math.min(100, Math.max(0, Number((prev.signalStrength + Number(signalFluctuation)).toFixed(1)))),
+-          // Estabilidade oscila de leve
+           orbitalStability: Math.min(100, Math.max(0, Number((prev.orbitalStability + Number(stabilityFluctuation)).toFixed(2)))),
+         };
++
++        setTelemetryHistory(prevHistory => [
++          ...prevHistory,
++          {
++            temperature: newTelemetry.temperature,
++            energyLevel: newTelemetry.energyLevel,
++            signalStrength: newTelemetry.signalStrength,
++            timestamp: Date.now(),
++          },
++        ].slice(-20));
++
++        return newTelemetry;
+       });
+-    }, 3000); // Atualiza os dados a cada 3 segundos
++    }, 3000);
+ 
+     return () => clearInterval(interval);
+   }, []);
+ 
+   return (
+-    <MissionContext.Provider value={{ telemetry, isDarkMode }}>
++    <MissionContext.Provider value={{ telemetry, telemetryHistory, isDarkMode }}>
+       {children}
+     </MissionContext.Provider>
+   );
+-}
+\ No newline at end of file
++};
+diff --git a/package.json b/package.json
+index 387ca6a..3501984 100644
+--- a/package.json
++++ b/package.json
+@@ -5,11 +5,11 @@
+   "dependencies": {
+     "@expo/vector-icons": "^15.0.2",
+     "@react-native-async-storage/async-storage": "2.2.0",
+-    "expo": "~56.0.6",
++    "expo": "~56.0.8",
+     "expo-constants": "~56.0.16",
+     "expo-font": "~56.0.5",
+-    "expo-linking": "~56.0.12",
+-    "expo-router": "~56.2.7",
++    "expo-linking": "~56.0.13",
++    "expo-router": "~56.2.8",
+     "expo-splash-screen": "~56.0.10",
+     "expo-status-bar": "~56.0.4",
+     "expo-symbols": "~56.0.5",
+@@ -20,6 +20,7 @@
+     "react-native-reanimated": "4.3.1",
+     "react-native-safe-area-context": "~5.7.0",
+     "react-native-screens": "4.25.2",
++    "react-native-svg": "^7.2.1",
+     "react-native-web": "~0.21.0",
+     "react-native-worklets": "0.8.3"
+   },
+diff --git a/react-native-svg-charts.d.ts b/react-native-svg-charts.d.ts
+new file mode 100644
+index 0000000..5681f37
+--- /dev/null
++++ b/react-native-svg-charts.d.ts
+@@ -0,0 +1,25 @@
++declare module 'react-native-svg-charts' {
++  import { Component } from 'react';
++  import { ViewProps } from 'react-native';
++
++  interface LineChartProps extends ViewProps {
++    data: number[];
++    svg?: any;
++    contentInset?: {
++      top?: number;
++      bottom?: number;
++      left?: number;
++      right?: number;
++    };
++    curve?: any;
++    style?: any;
++  }
++
++  export class LineChart extends Component<LineChartProps> {}
++}
++
++declare module 'd3-shape' {
++  export function curveLinear(): any;
++  export function curveMonotoneX(): any;
++  export function curveNatural(): any;
++}

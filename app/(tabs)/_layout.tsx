@@ -36,6 +36,12 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="radio-outline" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="two"
+        options={{
+          href: null, // Esconde essa aba do navegador
+        }}
+      />
     </Tabs>
   );
 }

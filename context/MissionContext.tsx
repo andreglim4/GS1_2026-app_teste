@@ -1,57 +1,82 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, ReactNode } from 'react';
 
-export interface TelemetryData {
+export interface Telemetry {
   temperature: number;
   energyLevel: number;
   signalStrength: number;
   orbitalStability: number;
 }
 
-interface MissionContextType {
-  telemetry: TelemetryData;
+export interface TelemetryHistoryItem {
+  temperature: number;
+  energyLevel: number;
+  signalStrength: number;
+  timestamp: number;
+}
+
+export interface MissionContextType {
+  telemetry: Telemetry;
+  telemetryHistory: TelemetryHistoryItem[];
   isDarkMode: boolean;
 }
 
 export const MissionContext = createContext<MissionContextType | undefined>(undefined);
 
-export function MissionProvider({ children }: { children: React.ReactNode }) {
-  const [telemetry, setTelemetry] = useState<TelemetryData>({
+interface MissionProviderProps {
+  children: ReactNode;
+}
+
+export const MissionProvider: React.FC<MissionProviderProps> = ({ children }) => {
+  const [telemetry, setTelemetry] = useState<Telemetry>({
     temperature: 24.5,
     energyLevel: 88.2,
     signalStrength: 94.0,
     orbitalStability: 99.1,
   });
 
+  const [telemetryHistory, setTelemetryHistory] = useState<TelemetryHistoryItem[]>([
+    { temperature: 20, energyLevel: 88, signalStrength: 90, timestamp: Date.now() - 10000 },
+    { temperature: 21, energyLevel: 87, signalStrength: 91, timestamp: Date.now() - 8000 },
+    { temperature: 24.5, energyLevel: 88.2, signalStrength: 94.0, timestamp: Date.now() },
+  ]);
+
   const [isDarkMode] = useState<boolean>(true);
 
-  // Motor de simulação em tempo real
   useEffect(() => {
     const interval = setInterval(() => {
-      setTelemetry((prev) => {
-        // Gera pequenas oscilações aleatórias para simular os sensores
+      setTelemetry(prev => {
         const tempFluctuation = (Math.random() * 2 - 1).toFixed(1);
         const energyDrop = (Math.random() * 0.5).toFixed(1);
         const signalFluctuation = (Math.random() * 4 - 2).toFixed(1);
         const stabilityFluctuation = (Math.random() * 0.2 - 0.1).toFixed(2);
 
-        return {
+        const newTelemetry = {
           temperature: Number((prev.temperature + Number(tempFluctuation)).toFixed(1)),
-          // A energia cai aos poucos, mas não passa de 0
           energyLevel: Math.max(0, Number((prev.energyLevel - Number(energyDrop)).toFixed(1))),
-          // O sinal oscila entre 0 e 100
           signalStrength: Math.min(100, Math.max(0, Number((prev.signalStrength + Number(signalFluctuation)).toFixed(1)))),
-          // Estabilidade oscila de leve
           orbitalStability: Math.min(100, Math.max(0, Number((prev.orbitalStability + Number(stabilityFluctuation)).toFixed(2)))),
         };
+
+        setTelemetryHistory(prevHistory => [
+          ...prevHistory,
+          {
+            temperature: newTelemetry.temperature,
+            energyLevel: newTelemetry.energyLevel,
+            signalStrength: newTelemetry.signalStrength,
+            timestamp: Date.now(),
+          },
+        ].slice(-20));
+
+        return newTelemetry;
       });
-    }, 3000); // Atualiza os dados a cada 3 segundos
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <MissionContext.Provider value={{ telemetry, isDarkMode }}>
+    <MissionContext.Provider value={{ telemetry, telemetryHistory, isDarkMode }}>
       {children}
     </MissionContext.Provider>
   );
-}
+};
