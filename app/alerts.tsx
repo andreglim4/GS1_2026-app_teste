@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { MissionContext } from '../context/MissionContext';
 
@@ -17,27 +17,34 @@ export default function AlertsScreen() {
   if (!context) return null;
   const { telemetry } = context;
 
-  useEffect(() => {
-    checkAlerts();
-  }, [telemetry]); // Recalcula sempre que a telemetria mudar
-
-  const checkAlerts = async () => {
+  const checkAlerts = useCallback(async () => {
     try {
       const savedTemp = await AsyncStorage.getItem('@max_temp');
       const savedEnergy = await AsyncStorage.getItem('@min_energy');
-      
+      const savedSignal = await AsyncStorage.getItem('@min_signal');
+      const savedStability = await AsyncStorage.getItem('@max_stability');
+
       // Define limiares padrão caso o usuário ainda não tenha configurado
       const maxTempLimit = savedTemp ? Number(savedTemp) : 30;
       const minEnergyLimit = savedEnergy ? Number(savedEnergy) : 20;
+      const minSignalLimit = savedSignal ? Number(savedSignal) : 40;
+      const minStabilityLimit = savedStability ? Number(savedStability) : 85;
 
       const newAlerts: AlertItem[] = [];
 
-      // Lógica de Geração de Alertas
       if (telemetry.temperature >= maxTempLimit) {
         newAlerts.push({
           id: 'temp_high',
           type: 'danger',
           message: `CRÍTICO: Temperatura do núcleo (${telemetry.temperature}°C) excedeu o limite seguro de ${maxTempLimit}°C.`,
+        });
+      }
+
+      if (telemetry.orbitalStability < minStabilityLimit) {
+        newAlerts.push({
+          id: 'stability_low',
+          type: 'warning',
+          message: `ATENÇÃO: Estabilidade orbital (${telemetry.orbitalStability.toFixed(1)}%) abaixo do mínimo aceitável de ${minStabilityLimit}%.`,
         });
       }
 
@@ -49,7 +56,8 @@ export default function AlertsScreen() {
         });
       }
 
-      if (telemetry.signalStrength < 40) {
+      if (telemetry.signalStrength < minSignalLimit) {
+
         newAlerts.push({
           id: 'signal_loss',
           type: 'danger',
@@ -63,7 +71,12 @@ export default function AlertsScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [telemetry]);
+
+  useEffect(() => {
+    checkAlerts();
+  }, [checkAlerts]);
+
 
   if (isLoading) {
     return (
