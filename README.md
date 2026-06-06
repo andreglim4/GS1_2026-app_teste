@@ -209,7 +209,7 @@ https://github.com/user-attachments/assets/5de5711a-7951-445a-a155-c32c07947a20
 
 
 
- [Link do vídeo]()
+Para assistir o vídeo completo clique [aqui](https://youtube.com/shorts/aQoDbs_oCZE?feature=share)
 
 *Duração*: Máximo 3 minutos
 
