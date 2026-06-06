@@ -85,7 +85,7 @@
 
 1. *Clone o repositório*
 bash
-git clone https://github.com/seu-usuario/space-predictive-analytics.git
+git clone https://github.com/andreglim4/GS1_2026-app_teste
 cd GS1_2026-app_teste
 
 
