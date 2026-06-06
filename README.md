@@ -14,33 +14,42 @@
 | Nome | RM |
 |------|----|
 | André Ayello de Nobrega | RM561754 |
-| André Gouveia de Lima | RM564219 |
-| Mirella Mascarenhas | RM562092 |
+|  André Gouveia de Lima  | RM564219 |
+|   Mirella Mascarenhas   | RM562092 |
 
 ---
 
 ## 📱 Telas do Aplicativo
 
 <img width="372" height="835" alt="image" src="https://github.com/user-attachments/assets/a4c35117-2d0f-4357-a8d6-26d93f04d729" />
+Sistemas e Telemetria - Visão geral dos indicadores da missão: estabilidade orbital, temperatura do núcleo, com histórico e acesso a configurações e alertas.
 
 <img width="373" height="825" alt="image" src="https://github.com/user-attachments/assets/42112502-de5a-4c0b-920c-92d8dd1542b7" />
+Config. Sensores - Ajuste dos limites de temperatura máxima e estabilidade orbital mínima.
 
 <img width="375" height="838" alt="image" src="https://github.com/user-attachments/assets/33fc24ec-80b2-43da-b5f8-c3cdf6498b64" />
+Confirmação Sensores - Modal de sucesso confirmando salvamento dos parâmetros.
 
 <img width="371" height="824" alt="image" src="https://github.com/user-attachments/assets/1fcf3e25-38fe-44e1-b68d-48b9afef80a8" />
+Matriz Energética - Visão geral da energia: carga das baterias, eficiência dos painéis solares e histórico de consumo.
 
 <img width="371" height="829" alt="image" src="https://github.com/user-attachments/assets/4a2878ee-2663-4376-8062-c6ee4de31c76" />
+Config. Energia - Ajuste do nível mínimo de energia da bateria
 
 <img width="378" height="830" alt="image" src="https://github.com/user-attachments/assets/c9f5b2e6-1ae9-4522-88d5-4210e00cf55b" />
+Confirmação Energia - Modal confirmando salvamento do limite de energia.
 
 <img width="370" height="834" alt="image" src="https://github.com/user-attachments/assets/3c53340b-00c2-4197-bcca-9ab79980a924" />
+Link Orbital - Visão geral das comunicações: força do sinal, status da telemetria e histórico.
 
 <img width="375" height="833" alt="image" src="https://github.com/user-attachments/assets/14650b53-e8fa-4ff5-b862-738f00a4eb35" />
+Config. Comunicações - Ajuste da força mínima de sinal necessária.
 
 <img width="374" height="825" alt="image" src="https://github.com/user-attachments/assets/982a8d32-21b5-4e23-9c95-39e2a401f975" />
+Alertas Ativos (Vazio) - Tela de alertas sem eventos — sistema operacional normal.
 
 <img width="376" height="839" alt="image" src="https://github.com/user-attachments/assets/5cecb788-aa2d-4f1c-bad5-35e98b3f3b5d" />
-
+Alertas Ativos (Críticos) - Exibição de alertas vermelhos e avisos amarelos sobre temperatura, energia e sinal.
 
 ---
 
