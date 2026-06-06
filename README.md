@@ -204,7 +204,12 @@ O sistema gera alertas baseado em 4 condições:
 ## 📹 Vídeo de Demonstração
 
 
-Ou acesse diretamente: [Link do vídeo]()
+
+https://github.com/user-attachments/assets/5de5711a-7951-445a-a155-c32c07947a20
+
+
+
+ [Link do vídeo]()
 
 *Duração*: Máximo 3 minutos
 
